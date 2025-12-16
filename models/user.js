@@ -21,7 +21,7 @@ const jwt = require('jsonwebtoken');
         },
          profileImageURL:{
             type:String,
-            default:"/public/default.jpg"
+                default:"/default.jpg"
         },
         role:{
             type:String,
@@ -58,11 +58,15 @@ userSchema.static("matchPasswordAndGenerateToken", async function(email, passwor
 
     if(hashedPassword !== userProvidedHash) throw new Error('Incorrect Password');
 
+    const profileImageURL = user.profileImageURL?.startsWith('/public/')
+        ? user.profileImageURL.replace('/public/','/')
+        : (user.profileImageURL || '/default.jpg');
+
     const token = jwt.sign({
         _id: user._id,
         email: user.email,
         fullName: user.fullName,
-        profileImageURL: user.profileImageURL,
+        profileImageURL,
         role: user.role
     }, 'secret-key');
     
