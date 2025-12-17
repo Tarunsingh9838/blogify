@@ -14,11 +14,22 @@ const userRoute = require("./routes/user");
 const blogRoute = require("./routes/blog");
 
 const app = express();
-const PORT = process.env.PORT||8000;
+const PORT = process.env.PORT || 8000;
 
 mongoose
   .connect(process.env.MONGO_URL)
-  .then((e) => console.log("MongoDB connected"));
+  .then((e) => console.log("MongoDB connected"))
+  .catch((err) => {
+    console.error('Failed to connect to MongoDB:', err.message || err);
+    console.error('Continuing to start the server; some features may be limited.');
+  });
+
+process.on('unhandledRejection', (reason, p) => {
+  console.error('Unhandled Rejection at:', p, 'reason:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
 
 app.set("view engine", "ejs");
 app.set("views", path.resolve("./views"));
