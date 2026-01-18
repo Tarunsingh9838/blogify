@@ -12,6 +12,7 @@ const {
 } = require("./middlewares/authentication");
 const userRoute = require("./routes/user");
 const blogRoute = require("./routes/blog");
+const adminRoute = require("./routes/admin");
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -42,8 +43,8 @@ app.use(checkForAuthenticationCookie("token"));
 app.use(express.static(path.resolve("./public")));
 
 app.get("/", async (req, res) => {
-  const allBlogs = await Blog.find({});
-  res.render("home", {
+  const allBlogs = await Blog.find({}).sort({ createdAt: -1 });
+  return res.render("home", {
     user: req.user,
     blogs: allBlogs,
   });
@@ -51,5 +52,6 @@ app.get("/", async (req, res) => {
 
 app.use("/user", userRoute);
 app.use("/blog", blogRoute);
+app.use("/admin", adminRoute);
 
 app.listen(PORT, () => console.log(`Server Started at PORT: ${PORT}`));

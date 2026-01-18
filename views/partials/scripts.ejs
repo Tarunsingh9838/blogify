@@ -1,3 +1,41 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
+
+<script>
+  // Prevent browser back button navigation on home page when user is logged in
+  (function() {
+    const isLoggedIn = <%= locals.user ? 'true' : 'false' %>;
+    const isHomePage = window.location.pathname === '/';
+    
+    if (isLoggedIn) {
+      // Always push a new state when logged in
+      window.history.pushState({ page: window.location.pathname }, null, window.location.href);
+      
+      // Listen for back button press
+      window.addEventListener('popstate', function(e) {
+        const currentPath = window.location.pathname;
+        
+        // If on home page, prevent going back
+        if (currentPath === '/') {
+          window.history.pushState({ page: currentPath }, null, window.location.href);
+          alert('You cannot go back from home page! Please use the logout button to exit.');
+          return false;
+        } else {
+          // Allow going back from other pages
+          // This lets the browser's default back behavior work
+        }
+      });
+      
+      // If currently on home page, prevent back
+      if (isHomePage) {
+        window.history.pushState({ page: '/' }, null, window.location.href);
+        
+        window.addEventListener('popstate', function(e) {
+          window.history.pushState({ page: '/' }, null, window.location.href);
+          alert('You cannot go back from home page! Please use the logout button to exit.');
+        });
+      }
+    }
+  })();
+</script>

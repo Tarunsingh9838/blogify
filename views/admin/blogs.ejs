@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head') %>
+    <style>
+        .admin-container {
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .section h1 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+
+        .admin-nav {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .admin-nav a {
+            display: inline-block;
+            margin-right: 15px;
+            padding: 10px 20px;
+            background-color: #f0f0f0;
+            color: #333;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .admin-nav a:hover,
+        .admin-nav a.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table thead {
+            background-color: #f9f9f9;
+        }
+
+        table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #ddd;
+        }
+
+        table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        table tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: none;
+            transition: all 0.3s;
+            margin-right: 5px;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .blog-title {
+            font-weight: 600;
+            color: #333;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <%- include('../partials/nav') %>
+    
+    <div class="admin-container">
+        <div class="admin-nav">
+            <a href="/admin">Dashboard</a>
+            <a href="/admin/users">Users</a>
+            <a href="/admin/blogs" class="active">Blogs</a>
+            <a href="/admin/comments">Comments</a>
+        </div>
+
+        <div class="section">
+            <h1>Manage Blogs</h1>
+            
+            <% if (blogs.length > 0) { %>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Author</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% blogs.forEach(blog => { %>
+                            <tr>
+                                <td>
+                                    <div class="blog-title"><%= blog.title %></div>
+                                </td>
+                                <td><%= blog.createdBy.fullName %></td>
+                                <td><%= new Date(blog.createdAt).toLocaleDateString() %></td>
+                                <td>
+                                    <div class="action-btns">
+                                        <a href="/blog/<%= blog._id %>" class="btn btn-primary">View</a>
+                                        <button class="btn btn-danger" onclick="deleteBlog('<%= blog._id %>', '<%= blog.title %>)">Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            <% } else { %>
+                <div class="empty-state">
+                    <p>No blogs found</p>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <script>
+        function deleteBlog(blogId, blogTitle) {
+            if (!confirm(`Are you sure you want to delete "${blogTitle}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            fetch(`/admin/blogs/${blogId}`, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Blog deleted successfully');
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(err => alert('Error: ' + err.message));
+        }
+    </script>
+
+    <%- include('../partials/scripts') %>
+</body>
+</html>

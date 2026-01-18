@@ -36,9 +36,9 @@
                     <!-- Author Info & Actions -->
                     <div class="blog-meta d-flex align-items-center justify-content-between flex-wrap gap-2 pb-3 border-bottom">
                         <div class="d-flex align-items-center gap-3 flex-wrap">
-                            <img src="<%= blog.createdBy.profileImageURL %>" alt="avatar" class="blog-author-avatar rounded-circle">
+                            <img src="<%= blog.createdBy?.profileImageURL || '/default.svg' %>" alt="avatar" class="blog-author-avatar rounded-circle">
                             <div>
-                                <p class="blog-author-name mb-0"><%= blog.createdBy.fullName %></p>
+                                <p class="blog-author-name mb-0"><%= blog.createdBy?.fullName || 'Unknown Author' %></p>
                                 <div class="d-flex gap-2 align-items-center flex-wrap">
                                     <p class="blog-publish-date mb-0">
                                         <i class="bi bi-calendar3"></i> 
