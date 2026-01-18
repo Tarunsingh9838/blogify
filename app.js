@@ -43,11 +43,25 @@ app.use(checkForAuthenticationCookie("token"));
 app.use(express.static(path.resolve("./public")));
 
 app.get("/", async (req, res) => {
-  const allBlogs = await Blog.find({}).sort({ createdAt: -1 });
-  return res.render("home", {
-    user: req.user,
-    blogs: allBlogs,
-  });
+  try {
+    // Show approved blogs for regular users, all blogs for admins
+    const query = (req.user && req.user.role === "ADMIN") 
+      ? {} 
+      : { $or: [{ status: "approved" }, { status: { $exists: false } }] };
+    
+    const allBlogs = await Blog.find(query).sort({ createdAt: -1 });
+    res.render("home", {
+      user: req.user,
+      blogs: allBlogs,
+    });
+  } catch (error) {
+    console.error('Home page error:', error);
+    res.render("home", {
+      user: req.user,
+      blogs: [],
+      error: "Error loading blogs"
+    });
+  }
 });
 
 app.use("/user", userRoute);

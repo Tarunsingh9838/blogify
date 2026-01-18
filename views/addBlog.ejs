@@ -179,6 +179,15 @@
                     <textarea name="body" id="content" style="display:none;"></textarea>
                 </div>
 
+                <!-- Scheduled Publishing -->
+                <div class="form-group">
+                    <label for="scheduledAt" style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: 600; color: #333;">
+                        <i class="bi bi-calendar-event"></i> Schedule Publishing (Optional)
+                    </label>
+                    <input type="datetime-local" id="scheduledAt" name="scheduledAt" class="form-control" placeholder="Select date and time">
+                    <small style="color: #666; margin-top: 4px;">Leave empty to publish immediately</small>
+                </div>
+
                 <!-- Form Actions -->
                 <div class="form-actions">
                     <button type="submit" class="btn-submit">

@@ -173,4 +173,77 @@ router.delete("/comments/:id", checkAdminAccess, async (req, res) => {
   }
 });
 
+// Blog Approval - Pending Blogs
+router.get("/blog-approvals", checkAdminAccess, async (req, res) => {
+  try {
+    const pendingBlogs = await Blog.find({ status: "pending" })
+      .populate("createdBy", "fullName email")
+      .sort({ createdAt: -1 });
+
+    const approvedBlogs = await Blog.find({ status: "approved" })
+      .populate("createdBy", "fullName email")
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    res.render("admin/blogApprovals", {
+      user: req.user,
+      pendingBlogs,
+      approvedBlogs,
+    });
+  } catch (error) {
+    res.status(500).render("error", {
+      message: "Error loading blog approvals",
+      user: req.user,
+    });
+  }
+});
+
+// Approve Blog
+router.post("/blogs/:id/approve", checkAdminAccess, async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+
+    if (!blog) {
+      return res.status(404).json({ error: "Blog not found" });
+    }
+
+    // If scheduled, keep pending until scheduled time
+    if (blog.scheduledAt && new Date() < new Date(blog.scheduledAt)) {
+      blog.status = "pending";
+      blog.approvalStatus = "approved-scheduled";
+    } else {
+      blog.status = "approved";
+      blog.isPublished = true;
+    }
+    
+    blog.approvedBy = req.user._id;
+    await blog.save();
+
+    res.json({ success: true, message: "Blog approved successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Error approving blog" });
+  }
+});
+
+// Reject Blog
+router.post("/blogs/:id/reject", checkAdminAccess, async (req, res) => {
+  try {
+    const { reason } = req.body;
+    const blog = await Blog.findById(req.params.id);
+
+    if (!blog) {
+      return res.status(404).json({ error: "Blog not found" });
+    }
+
+    blog.status = "rejected";
+    blog.rejectionReason = reason || "No reason provided";
+    blog.approvedBy = req.user._id;
+    await blog.save();
+
+    res.json({ success: true, message: "Blog rejected successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Error rejecting blog" });
+  }
+});
+
 module.exports = router;

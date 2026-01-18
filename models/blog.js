@@ -22,6 +22,28 @@ const blogSchema=new Schema({
         type:Number,
         default:0,
     },
+    status:{
+        type:String,
+        enum:["pending","approved","rejected"],
+        default:"pending",
+    },
+    approvedBy:{
+        type:Schema.Types.ObjectId,
+        ref:"user",
+        default:null,
+    },
+    rejectionReason:{
+        type:String,
+        default:null,
+    },
+    scheduledAt:{
+        type:Date,
+        default:null,
+    },
+    isPublished:{
+        type:Boolean,
+        default:false,
+    },
 },
 {timestamps:true}
 

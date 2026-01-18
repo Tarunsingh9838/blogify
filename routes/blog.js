@@ -141,14 +141,32 @@ router.post('/:id/edit', upload.single('coverImage'), async (req, res) => {
 });
 
 router.post("/", upload.single("coverImage"), async (req, res) => {
-  const { title, body } = req.body;
-  const blog = await Blog.create({
-    body,
-    title,
-    createdBy: req.user._id,
-    coverImageURL: `/uploads/${req.file.filename}`,
-  });
-  return res.redirect(`/blog/${blog._id}`);
+  const { title, body, scheduledAt } = req.body;
+  
+  try {
+    const blogData = {
+      body,
+      title,
+      createdBy: req.user._id,
+      coverImageURL: `/uploads/${req.file.filename}`,
+      status: "pending",
+      isPublished: false,
+    };
+
+    // If scheduled time is provided, set it
+    if (scheduledAt) {
+      const scheduledDate = new Date(scheduledAt);
+      if (scheduledDate > new Date()) {
+        blogData.scheduledAt = scheduledDate;
+      }
+    }
+
+    const blog = await Blog.create(blogData);
+    return res.redirect(`/blog/${blog._id}`);
+  } catch (error) {
+    console.error('Blog creation error:', error);
+    return res.redirect('/blog/add-new');
+  }
 });
   // Delete a blog (owner only)
   router.post('/:id/delete', async (req, res) => {
