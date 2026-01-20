@@ -49,7 +49,13 @@ app.get("/", async (req, res) => {
       ? {} 
       : { $or: [{ status: "approved" }, { status: { $exists: false } }] };
     
-    const allBlogs = await Blog.find(query).sort({ createdAt: -1 });
+    const allBlogs = await Blog.find(query)
+      .sort({ createdAt: -1 })
+      .then(blogs => blogs.map(blog => ({
+        ...blog.toObject ? blog.toObject() : blog,
+        coverImageURL: blog.coverImageURL || '/default.jpg'
+      })));
+    
     res.render("home", {
       user: req.user,
       blogs: allBlogs,

@@ -5,6 +5,10 @@ const router = Router();
 const Blog = require("../models/blog");
 const Comment = require("../models/comment");
 
+router.get("/", (req, res) => {
+  return res.redirect('/');
+});
+
 router.get("/add-new", (req, res) => {
   return res.render("addBlog", {
     user: req.user,
