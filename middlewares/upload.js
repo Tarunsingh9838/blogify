@@ -8,7 +8,7 @@ const blogStorage = new CloudinaryStorage({
   params: {
     folder: 'blogify/blogs',
     resource_type: 'auto',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'],
   },
 });
 
@@ -18,7 +18,7 @@ const avatarStorage = new CloudinaryStorage({
   params: {
     folder: 'blogify/avatars',
     resource_type: 'auto',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'],
   },
 });
 

@@ -5,6 +5,18 @@ const router = Router();
 const Blog = require("../models/blog");
 const Comment = require("../models/comment");
 
+// Error handler for multer
+const handleUploadError = (err, req, res, next) => {
+  if (err) {
+    console.error('Upload error:', err.message);
+    return res.status(400).render('error', {
+      message: 'Image upload failed. Please try a different image or format.',
+      user: req.user
+    });
+  }
+  next();
+};
+
 router.get("/", (req, res) => {
   return res.redirect('/');
 });
@@ -109,7 +121,7 @@ router.post("/comment/:blogId", async (req, res) => {
 });
 
 // Update blog (owner only; cover image optional)
-router.post('/:id/edit', blogUpload.single('coverImage'), async (req, res) => {
+router.post('/:id/edit', blogUpload.single('coverImage'), handleUploadError, async (req, res) => {
   if (!req.user) {
     return res.status(401).redirect('/user/signin');
   }
@@ -131,10 +143,15 @@ router.post('/:id/edit', blogUpload.single('coverImage'), async (req, res) => {
   return res.redirect(`/blog/${req.params.id}`);
 });
 
-router.post("/", blogUpload.single("coverImage"), async (req, res) => {
+router.post("/", blogUpload.single("coverImage"), handleUploadError, async (req, res) => {
   const { title, body, scheduledAt } = req.body;
   
   try {
+    // Validate required fields
+    if (!title || !body) {
+      return res.status(400).redirect('/blog/add-new');
+    }
+
     const blogData = {
       body,
       title,
@@ -155,8 +172,11 @@ router.post("/", blogUpload.single("coverImage"), async (req, res) => {
     const blog = await Blog.create(blogData);
     return res.redirect(`/blog/${blog._id}`);
   } catch (error) {
-    console.error('Blog creation error:', error);
-    return res.redirect('/blog/add-new');
+    console.error('Blog creation error:', error.message);
+    return res.status(500).render('error', {
+      message: 'Error creating blog. Please try again.',
+      user: req.user
+    });
   }
 });
   // Delete a blog (owner only)

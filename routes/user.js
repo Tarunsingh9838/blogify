@@ -4,6 +4,18 @@ const { avatarUpload } = require("../middlewares/upload");
 const crypto = require('crypto');
 const router=Router();
 
+// Error handler for multer
+const handleUploadError = (err, req, res, next) => {
+  if (err) {
+    console.error('Upload error:', err.message);
+    return res.render('error', {
+      message: 'Image upload failed. Please try a different image or format.',
+      user: req.user
+    });
+  }
+  next();
+};
+
 router.get('/signup',(req,res)=>{
     return res.render("signup");
 })
@@ -33,7 +45,7 @@ router.get('/logout',(req,res)=>{
 
 
 
-router.post('/signup', avatarUpload.single('profileImage'), async (req,res)=>{
+router.post('/signup', avatarUpload.single('profileImage'), handleUploadError, async (req,res)=>{
     try {
         const {fullName,email,password}=req.body;
         const profileImageURL = req.file ? req.file.path : '/default.svg';
@@ -61,7 +73,7 @@ router.get('/profile', (req, res) => {
     return res.render('profile', { user: req.user });
 });
 
-router.post('/profile/update-avatar', avatarUpload.single('profileImage'), async (req, res) => {
+router.post('/profile/update-avatar', avatarUpload.single('profileImage'), handleUploadError, async (req, res) => {
     if (!req.user) {
         return res.redirect('/user/signin');
     }
