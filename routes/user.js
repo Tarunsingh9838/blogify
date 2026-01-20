@@ -1,20 +1,8 @@
 const {Router}=require("express");
 const User=require('../models/user')
-const multer = require('multer');
-const path = require('path');
+const { avatarUpload } = require("../middlewares/upload");
 const crypto = require('crypto');
 const router=Router();
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.resolve(`./public/uploads/`));
-  },
-  filename: function (req, file, cb) {
-    const fileName = `${Date.now()}-${file.originalname}`;
-    cb(null, fileName);
-  },
-});
-const upload = multer({ storage: storage });
 
 router.get('/signup',(req,res)=>{
     return res.render("signup");
@@ -45,10 +33,10 @@ router.get('/logout',(req,res)=>{
 
 
 
-router.post('/signup', upload.single('profileImage'), async (req,res)=>{
+router.post('/signup', avatarUpload.single('profileImage'), async (req,res)=>{
     try {
         const {fullName,email,password}=req.body;
-        const profileImageURL = req.file ? `/uploads/${req.file.filename}` : '/default.svg';
+        const profileImageURL = req.file ? req.file.path : '/default.svg';
         await User.create({
             fullName,
             email,
@@ -73,14 +61,14 @@ router.get('/profile', (req, res) => {
     return res.render('profile', { user: req.user });
 });
 
-router.post('/profile/update-avatar', upload.single('profileImage'), async (req, res) => {
+router.post('/profile/update-avatar', avatarUpload.single('profileImage'), async (req, res) => {
     if (!req.user) {
         return res.redirect('/user/signin');
     }
     if (!req.file) {
         return res.redirect('/user/profile');
     }
-    const profileImageURL = `/uploads/${req.file.filename}`;
+    const profileImageURL = req.file.path;
     await User.findByIdAndUpdate(req.user._id, { profileImageURL });
     return res.redirect('/user/profile');
 });

@@ -17,7 +17,8 @@ router.get("/", checkAdminAccess, async (req, res) => {
     const recentBlogs = await Blog.find()
       .populate("createdBy", "fullName email")
       .sort({ createdAt: -1 })
-      .limit(10);
+      .limit(10)
+      .then(blogs => blogs.filter(blog => blog.createdBy)); // Filter out null authors
 
     const recentUsers = await User.find()
       .sort({ createdAt: -1 })
@@ -35,6 +36,7 @@ router.get("/", checkAdminAccess, async (req, res) => {
       recentUsers,
     });
   } catch (error) {
+    console.error('Admin dashboard error:', error);
     res.status(500).render("error", {
       message: "Error loading admin dashboard",
       user: req.user,
@@ -106,11 +108,15 @@ router.get("/blogs", checkAdminAccess, async (req, res) => {
       .populate("createdBy", "fullName email")
       .sort({ createdAt: -1 });
 
+    // Filter out blogs with deleted authors
+    const validBlogs = blogs.filter(blog => blog.createdBy);
+
     res.render("admin/blogs", {
       user: req.user,
-      blogs,
+      blogs: validBlogs,
     });
   } catch (error) {
+    console.error('Error loading blogs:', error);
     res.status(500).render("error", {
       message: "Error loading blogs",
       user: req.user,
@@ -145,11 +151,15 @@ router.get("/comments", checkAdminAccess, async (req, res) => {
       .populate("createdBy", "fullName email")
       .sort({ createdAt: -1 });
 
+    // Filter out comments with deleted authors or blogs
+    const validComments = comments.filter(comment => comment.createdBy && comment.blogId);
+
     res.render("admin/comments", {
       user: req.user,
-      comments,
+      comments: validComments,
     });
   } catch (error) {
+    console.error('Error loading comments:', error);
     res.status(500).render("error", {
       message: "Error loading comments",
       user: req.user,
@@ -178,12 +188,14 @@ router.get("/blog-approvals", checkAdminAccess, async (req, res) => {
   try {
     const pendingBlogs = await Blog.find({ status: "pending" })
       .populate("createdBy", "fullName email")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .then(blogs => blogs.filter(blog => blog.createdBy));
 
     const approvedBlogs = await Blog.find({ status: "approved" })
       .populate("createdBy", "fullName email")
       .sort({ createdAt: -1 })
-      .limit(10);
+      .limit(10)
+      .then(blogs => blogs.filter(blog => blog.createdBy));
 
     res.render("admin/blogApprovals", {
       user: req.user,
@@ -191,6 +203,7 @@ router.get("/blog-approvals", checkAdminAccess, async (req, res) => {
       approvedBlogs,
     });
   } catch (error) {
+    console.error('Error loading blog approvals:', error);
     res.status(500).render("error", {
       message: "Error loading blog approvals",
       user: req.user,
@@ -210,7 +223,6 @@ router.post("/blogs/:id/approve", checkAdminAccess, async (req, res) => {
     // If scheduled, keep pending until scheduled time
     if (blog.scheduledAt && new Date() < new Date(blog.scheduledAt)) {
       blog.status = "pending";
-      blog.approvalStatus = "approved-scheduled";
     } else {
       blog.status = "approved";
       blog.isPublished = true;
@@ -221,6 +233,7 @@ router.post("/blogs/:id/approve", checkAdminAccess, async (req, res) => {
 
     res.json({ success: true, message: "Blog approved successfully" });
   } catch (error) {
+    console.error('Error approving blog:', error);
     res.status(500).json({ error: "Error approving blog" });
   }
 });
@@ -242,6 +255,7 @@ router.post("/blogs/:id/reject", checkAdminAccess, async (req, res) => {
 
     res.json({ success: true, message: "Blog rejected successfully" });
   } catch (error) {
+    console.error('Error rejecting blog:', error);
     res.status(500).json({ error: "Error rejecting blog" });
   }
 });

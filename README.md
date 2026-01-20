@@ -26,7 +26,8 @@ A modern, feature-rich blogging platform built with Node.js, Express, and MongoD
 - **Database**: MongoDB with Mongoose ODM
 - **Frontend**: EJS Templates
 - **Authentication**: JWT (JSON Web Tokens)
-- **File Upload**: Multer
+- **File Upload**: Multer with Cloudinary Storage
+- **Cloud Storage**: Cloudinary (image hosting)
 - **Development**: Nodemon for hot reloading
 
 ## 📋 Project Structure
@@ -43,9 +44,12 @@ BlogApp/
 │   └── admin.js
 ├── middlewares/            # Custom middleware
 │   ├── authentication.js
-│   └── admin.js
+│   ├── admin.js
+│   └── upload.js            # Cloudinary upload middleware
 ├── services/               # Business logic
 │   └── authentication.js
+├── config/                 # Configuration files
+│   └── cloudinary.js       # Cloudinary setup
 ├── views/                  # EJS templates
 │   ├── partials/          # Reusable components
 │   ├── admin/             # Admin panel pages
@@ -81,6 +85,11 @@ BlogApp/
    MONGO_URL=mongodb://localhost:27017/blogify
    PORT=8000
    JWT_SECRET=your_jwt_secret_key_here
+   
+   # Cloudinary Configuration
+   CLOUDINARY_CLOUD_NAME=your_cloud_name
+   CLOUDINARY_API_KEY=your_api_key
+   CLOUDINARY_API_SECRET=your_api_secret
    ```
    
    Or use MongoDB Atlas:
@@ -88,6 +97,11 @@ BlogApp/
    MONGO_URL=mongodb+srv://username:password@cluster.mongodb.net/blogify
    PORT=8000
    JWT_SECRET=your_jwt_secret_key_here
+   
+   # Cloudinary Configuration
+   CLOUDINARY_CLOUD_NAME=your_cloud_name
+   CLOUDINARY_API_KEY=your_api_key
+   CLOUDINARY_API_SECRET=your_api_secret
    ```
 
 4. **Run the application**:
@@ -146,6 +160,32 @@ npm run dev     # Start the server in development mode with nodemon
 | `MONGO_URL` | MongoDB connection string | Yes |
 | `PORT` | Server port (default: 8000) | No |
 | `JWT_SECRET` | Secret key for JWT tokens | Yes |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name | Yes |
+| `CLOUDINARY_API_KEY` | Cloudinary API key | Yes |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret | Yes |
+
+## ☁️ Cloudinary Setup
+
+Blogify uses Cloudinary for image uploads and storage. Follow these steps:
+
+1. **Create a Cloudinary account**:
+   - Go to [cloudinary.com](https://cloudinary.com) and sign up for a free account
+
+2. **Get your credentials**:
+   - Navigate to your Cloudinary dashboard
+   - Copy your **Cloud Name**, **API Key**, and **API Secret**
+
+3. **Add credentials to `.env`**:
+   ```env
+   CLOUDINARY_CLOUD_NAME=your_cloud_name
+   CLOUDINARY_API_KEY=your_api_key
+   CLOUDINARY_API_SECRET=your_api_secret
+   ```
+
+4. **Image uploads**:
+   - User avatars are stored in the `blogify/avatars` folder (max 2MB)
+   - Blog cover images are stored in the `blogify/blogs` folder (max 5MB)
+   - Only image files (jpg, jpeg, png, gif, webp) are allowed
 
 ## 🔐 Security Features
 
